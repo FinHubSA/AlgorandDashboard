@@ -11,15 +11,77 @@ export default class SankeyChart extends Component {
                 {
                     "account_type":"Banks",
                     "instrument_type":"Deposits",
-                    "counter_party":"House Holds",
+                    "counter_party":"Households",
                     "asset": false,
-                    'value': 300000
+                    'value': 1000000
                 },
                 {
-
+                    "account_type":"Banks",
+                    "instrument_type":"Deposits",
+                    "counter_party":"Firms",
+                    "asset": false,
+                    'value': 1500000
                 },
                 {
+                    "account_type":"Banks",
+                    "instrument_type":"Reserves",
+                    "counter_party":"Central Bank",
+                    "asset": true,
+                    'value': 500000
+                },
+                {
+                    "account_type":"Banks",
+                    "instrument_type":"Loans and Bonds",
+                    "counter_party":"Firms",
+                    "asset": true,
+                    'value': 2000000
+                },
+                
+                {
+                    "account_type":"Households",
+                    "instrument_type":"Bank Notes",
+                    "counter_party":"Central Bank",
+                    "asset": false,
+                    'value': 1000000
+                },
+                {
+                    "account_type":"Households",
+                    "instrument_type":"Deposits",
+                    "counter_party":"Banks",
+                    "asset": true,
+                    'value': 1000000
+                },
 
+
+                {
+                    "account_type":"Firms",
+                    "instrument_type":"Loans and Bonds",
+                    "counter_party":"Banks",
+                    "asset": false,
+                    'value': 1500000
+                },
+                {
+                    "account_type":"Firms",
+                    "instrument_type":"Deposits",
+                    "counter_party":"Banks",
+                    "asset": true,
+                    'value': 1500000
+                },
+
+
+                {
+                    "account_type":"Central Bank",
+                    "instrument_type":"Reserves",
+                    "counter_party":"Banks",
+                    "asset": false,
+                    'value': 500000
+                },
+                {
+                    "account_type":"Central Bank",
+                    "instrument_type":"Bank Notes",
+                    "counter_party":"Households",
+                    "asset": true,
+                    'value': 1000000
                 }
             ],
             config: {
@@ -54,6 +116,8 @@ export default class SankeyChart extends Component {
     }
 
     componentDidMount() {
+        this.props.data = this.data
+        this.props.config = this.config
         draw(this.props);
     }
 
@@ -63,7 +127,7 @@ export default class SankeyChart extends Component {
 
     render() {
         return (
-            <div className='vis-sankeychart'/>
+            <div id='sankeychart' className='vis-sankeychart'/>
         )
     }
 }
