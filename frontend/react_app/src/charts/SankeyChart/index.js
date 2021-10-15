@@ -1,4 +1,5 @@
 import React, { Component } from 'react';
+import ScriptTag from 'react-script-tag';
 import draw from './vis';
 
 export default class SankeyChart extends Component {
@@ -116,9 +117,7 @@ export default class SankeyChart extends Component {
     }
 
     componentDidMount() {
-        this.props.data = this.data
-        this.props.config = this.config
-        draw(this.props);
+        draw(this.props, this.state.data, this.state.config);
     }
 
     componentDidUpdate(preProps) {
@@ -126,8 +125,20 @@ export default class SankeyChart extends Component {
     }
 
     render() {
-        return (
-            <div id='sankeychart' className='vis-sankeychart'/>
-        )
+        return ([
+            <div class="chart-container center">
+                <div class="row headings">
+                    <div class="col-sm-3 col-xs-4">Liability</div>
+                    <div class="col-sm-3 col-xs-4 text-center">Instrument</div>
+                    <div class="col-sm-3 col-xs-4 text-right">Asset</div>
+                </div>
+                <div class="row">
+                    <div class="col-sm-9  text-center" id="info"></div>   
+                </div>
+                <div class="row">
+                    <div id='sankeychart' className='vis-sankeychart'/>
+                </div>
+            </div>
+        ])
     }
 }
