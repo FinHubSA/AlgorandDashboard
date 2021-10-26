@@ -29,12 +29,12 @@ def node_transactions(request):
 
 @api_view(['GET'])
 def total_transactions(request):
-    transactions_total = Account.objects.count()
+    transactions_total = Transaction.objects.count()
     total_transactions = {
         "total_transactions" : transactions_total
-    }
+        }
     if request.method == 'GET':
-        return JsonResponse(total_transactions, safe=False)
+        return JsonResponse(transactions_total, safe=False)
 
 @api_view(['GET'])
 def total_volume(request):
