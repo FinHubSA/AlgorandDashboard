@@ -34,7 +34,7 @@ def total_transactions(request):
         "total_transactions" : transactions_total
         }
     if request.method == 'GET':
-        return JsonResponse(transactions_total, safe=False)
+        return JsonResponse(total_transactions, safe=False)
 
 @api_view(['GET'])
 def total_volume(request):
