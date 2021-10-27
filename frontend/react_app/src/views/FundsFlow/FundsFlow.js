@@ -11,8 +11,8 @@ import CardHeader from "components/Card/CardHeader.js";
 import CardBody from "components/Card/CardBody.js";
 
 export default function FundsFlow({ ...rest }) {
-  const chartWidth = 1100;
-  const chartHeight = 530
+  const chartWidth = 800;
+  const chartHeight = 400
 
   const [data, set_data] = React.useState([
     {
