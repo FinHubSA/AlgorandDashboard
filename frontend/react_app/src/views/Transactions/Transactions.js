@@ -6,6 +6,7 @@ import { drag as d3Drag } from "d3-drag";
 import "../../assets/css/charts.css";
 import _ from "lodash";
 import $ from "jquery";
+import axios from "axios";
 // @material-ui/core
 import { makeStyles } from "@material-ui/core/styles";
 import TextField from '@material-ui/core/TextField';
@@ -17,7 +18,6 @@ import GridContainer from "components/Grid/GridContainer.js";
 import Card from "components/Card/Card.js";
 import CardHeader from "components/Card/CardHeader.js";
 import CardBody from "components/Card/CardBody.js";
-import FixedPlugin from "./FixedPlugin.js";
 
 const styles = {
   cardCategoryWhite: {
@@ -164,9 +164,17 @@ export default function Transactions({ ...rest }) {
   ]);
 
   React.useEffect(() => {
-    console.log("transactions fired");
-    draw(data);
+    get_data();
   });
+
+  function get_data() {
+    var url = "http://localhost:8000/api/node_transactions"
+    axios.get(url).then((response) => {
+      console.log(response.data)
+      draw(response.data);
+    })
+    .catch(error => console.error('Error: $(error)'));
+  }
 
   // Data for drawing
   var chart_data = {}; 
@@ -204,10 +212,10 @@ export default function Transactions({ ...rest }) {
     var colors = d3
       .scaleOrdinal()
       .domain([
-        "Banks",
-        "Central Bank",
-        "Firms",
-        "Households",
+        "Bank",
+        "CentralBank",
+        "Firm",
+        "Household",
         "License Service Providers",
       ])
       .range(["#ff8c00", "#40e0d0", "#008000", "#a52a2a", "#4fc2be"]);
@@ -275,6 +283,11 @@ export default function Transactions({ ...rest }) {
     var accounts_aggregates = {};
     chart_data.forEach(function (d) {
       var receivers = null;
+
+      d.amount = parseFloat(d.amount)
+      d.sender_balance = parseFloat(d.sender_balance)
+      d.receiver_balance = parseFloat(d.receiver_balance)
+      
       if (d.sender in sender_receiver) {
         receivers = sender_receiver[d.sender];
         //If sender and receiver are already in just add them up
@@ -689,11 +702,11 @@ export default function Transactions({ ...rest }) {
                     label="Account Type"
                     onChange={handleSelectChange}
                   >
-                    <MenuItem value="Households">Households</MenuItem>
-                    <MenuItem value="Banks">Banks</MenuItem>
-                    <MenuItem value="Firms">Firms</MenuItem>
-                    <MenuItem value="LSP">License Service Providers</MenuItem>
-                    <MenuItem value="Central Bank">Central Bank</MenuItem>
+                    <MenuItem value="household">Households</MenuItem>
+                    <MenuItem value="bank">Banks</MenuItem>
+                    <MenuItem value="firm">Firms</MenuItem>
+                    <MenuItem value="lsp">License Service Providers</MenuItem>
+                    <MenuItem value="centralbank">Central Bank</MenuItem>
                   </Select>
                 </GridItem>
                 <GridItem xs={12} sm={2} md={2}>
