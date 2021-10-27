@@ -9,10 +9,15 @@ import GridContainer from "components/Grid/GridContainer.js";
 import Card from "components/Card/Card.js";
 import CardHeader from "components/Card/CardHeader.js";
 import CardBody from "components/Card/CardBody.js";
+import styles from "assets/jss/material-dashboard-react/views/dashboardStyle.js";
+
+
+const useStyles = makeStyles(styles);
 
 export default function FundsFlow({ ...rest }) {
-  const chartWidth = 800;
-  const chartHeight = 400
+  const classes = useStyles();
+  const chartWidth = 750;
+  const chartHeight = 250
 
   const [data, set_data] = React.useState([
     {
@@ -718,32 +723,24 @@ export default function FundsFlow({ ...rest }) {
       <GridItem xs={12} sm={12} md={12}>
         <Card>
           <CardHeader color="primary">
-            <h4>Counterparty Flow Of Funds</h4>
+            <h4 style={{ marginTop: '5px', marginBottom: '5px' }} >Counterparty Flow Of Funds</h4>
           </CardHeader>
           <CardBody>
-            <GridContainer>
-              <GridItem xs={12} sm={12} md={1}></GridItem>
-              <GridItem xs={12} sm={12} md={4}>
-                <div className="col-sm-3 col-xs-4">Payments</div>
-              </GridItem>
-              <GridItem xs={12} sm={12} md={4}>
-                <div className="col-sm-3 col-xs-4">Instrument</div>
-              </GridItem>
-              <GridItem xs={12} sm={12} md={3}>
-                <div className="col-sm-3 col-xs-4">Receipts</div>
-              </GridItem>
-              <div style={{ overflowX: "hidden", overflowY: "hidden" }}>
-                <div className="chart-container center">
-                  
-                  <div className="row">
-                    <div className="col-sm-9  text-center" id="info"></div>
-                  </div>
-                  <div className="row">
-                    <div id="sankeychart" className="vis-sankeychart" />
-                  </div>
+            <div style={{ overflowX: "hidden", overflowY: "hidden" }}>
+              <div className="chart-container center">
+                <div className="row headings">
+                  <div className="col-sm-3 col-xs-4"><h6 className={classes.cardTitle} style={{ marginTop: '0px', marginBottom: '2px' }}>Liability</h6></div>
+                  <div className="col-sm-4 col-xs-4 text-right"><h6 className={classes.cardTitle} style={{ marginTop: '0px', marginBottom: '2px' }}>Instrument</h6></div>
+                  <div className="col-sm-3 col-xs-4 text-right"><h6 className={classes.cardTitle} style={{ marginTop: '0px', marginBottom: '2px' }}>Asset</h6></div>
+                </div>
+                <div className="row">
+                  <div className="col-sm-9  text-center" id="info"></div>
+                </div>
+                <div className="row">
+                  <div id="sankeychart" className="vis-sankeychart" />
                 </div>
               </div>
-            </GridContainer>
+            </div>
           </CardBody>
         </Card>
       </GridItem>
