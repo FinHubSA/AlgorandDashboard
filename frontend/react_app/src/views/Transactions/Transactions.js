@@ -182,6 +182,7 @@ export default function Transactions({ ...rest }) {
   var linkWidthScale = d3.scaleLinear().range([1, 5]);
   var linkStrengthScale = d3.scaleLinear().range([0, 1]);
   var margin = { top: 0, right: 0, bottom: 0, left: 0 };
+  var fmt = d3.format("0,.0f");
 
   function draw(data) {
     chart_data = _.cloneDeep(data);
@@ -503,15 +504,15 @@ export default function Transactions({ ...rest }) {
         "<div class='node-info'>"+
           "<p>Group Info: " +info+"</p>" +
           "<p>Group Range: " +range +"</p>" +
-          "<p>Payments: <i class='fas fa-rupee-sign' area-hidden='true'></i>" +d.payments + "</p>" +
-          "<p>Receipts: " + d.receipts + "</p>" +
+          "<p>Payments: R" + fmt(d.payments) + "</p>" +
+          "<p>Receipts: R " + fmt(d.receipts) + "</p>" +
         "</div>"
     }else{
       html = 
         "<div class='node-info'>"+
           "<p>Account Name: " +d.id +"</p>" +
-          "<p>Payments: <i class='fas fa-rupee-sign' area-hidden='true'></i>" +d.payments + "</p>" +
-          "<p>Receipts: " + d.receipts + "</p>" +
+          "<p>Payments: R " + fmt(d.payments) + "</p>" +
+          "<p>Receipts: R" + fmt(d.receipts) + "</p>" +
         "</div>"
     }
 
@@ -679,8 +680,9 @@ export default function Transactions({ ...rest }) {
             </CardHeader>
             <CardBody>
               <GridContainer>
-                <GridItem xs={12} sm={2} md={2}>
+                <GridItem xs={12} sm={4} md={2}>
                   <Select
+                    labelId="select-label"
                     style={{margin:"5px", width:"100%"}}
                     variant="outlined"
                     id="account_type_select"
