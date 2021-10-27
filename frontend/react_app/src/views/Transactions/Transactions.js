@@ -45,7 +45,6 @@ export default function Transactions({ ...rest }) {
   const chartWidth = 1100
   const chartHeight = 530;
   const groupBy = React.useRef();
-
   const [data, set_data] = React.useState([
     {
       key: "",
@@ -537,9 +536,10 @@ export default function Transactions({ ...rest }) {
     // Replace transactions sender/receiver with grouped node
     chart_data.forEach(function (txn) {
       const orignial_txn = _.cloneDeep(txn);
+      
       if (criteria(txn, parameters)[0]) {
-        grouped_nodes[txn.sender] = 1;
-        txn.sender = group_id;
+          grouped_nodes[txn.sender] = 1;
+          txn.sender = group_id;
       }
 
       if (criteria(txn, parameters)[1]) {
