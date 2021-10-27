@@ -45,7 +45,6 @@ export default function Transactions({ ...rest }) {
   const chartWidth = 1100
   const chartHeight = 530;
   const groupBy = React.useRef();
-
   const [data, set_data] = React.useState([
     {
       key: "",
@@ -178,6 +177,21 @@ export default function Transactions({ ...rest }) {
   var svg;
   var tooltip;
   var ticked;
+  var width;
+  var height;
+  var linkWidthScale = d3.scaleLinear().range([1, 5]);
+  var linkStrengthScale = d3.scaleLinear().range([0, 1]);
+  var margin = { top: 0, right: 0, bottom: 0, left: 0 };
+
+  // Data for drawing
+  var chart_data = {}; 
+  var simulation;
+  var nodes = [];
+  var links = [];
+  var svg;
+  var tooltip;
+  var ticked;
+  var groups = {};
   var width;
   var height;
   var linkWidthScale = d3.scaleLinear().range([1, 5]);
@@ -541,6 +555,7 @@ export default function Transactions({ ...rest }) {
         grouped_nodes[txn.sender] = 1;
         txn.sender = group_id;
       }
+    });
 
       if (criteria(txn, parameters)[1]) {
         grouped_nodes[txn.receiver] = 1;
