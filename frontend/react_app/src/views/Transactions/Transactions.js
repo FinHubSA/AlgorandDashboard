@@ -54,8 +54,8 @@ export default function Transactions({ ...rest }) {
       receiver: "B1",
       sender_balance: 1000000,
       receiver_balance: 100000000,
-      sender_type: "Households",
-      receiver_type: "Banks",
+      sender_type: "Household",
+      receiver_type: "Bank",
       instrument_type: "Deposits",
     },
     {
@@ -66,8 +66,8 @@ export default function Transactions({ ...rest }) {
       receiver: "B1",
       sender_balance: 2000000,
       receiver_balance: 100000000,
-      sender_type: "Households",
-      receiver_type: "Banks",
+      sender_type: "Household",
+      receiver_type: "Bank",
       instrument_type: "Deposits",
     },
     {
@@ -78,8 +78,8 @@ export default function Transactions({ ...rest }) {
       receiver: "HH2",
       sender_balance: 100000000,
       receiver_balance: 2000000,
-      sender_type: "Banks",
-      receiver_type: "Households",
+      sender_type: "Bank",
+      receiver_type: "Household",
       instrument_type: "Loans and Bonds",
     },
     {
@@ -90,8 +90,8 @@ export default function Transactions({ ...rest }) {
       receiver: "F1",
       sender_balance: 1000000,
       receiver_balance: 10000000,
-      sender_type: "Households",
-      receiver_type: "Firms",
+      sender_type: "Household",
+      receiver_type: "Firm",
       instrument_type: "Bank Notes",
     },
     {
@@ -102,8 +102,8 @@ export default function Transactions({ ...rest }) {
       receiver: "F1",
       sender_balance: 2000000,
       receiver_balance: 10000000,
-      sender_type: "Households",
-      receiver_type: "Firms",
+      sender_type: "Household",
+      receiver_type: "Firm",
       instrument_type: "Bank Notes",
     },
     {
@@ -113,8 +113,8 @@ export default function Transactions({ ...rest }) {
       receiver: "F1",
       sender_balance: 2000000,
       receiver_balance: 10000000,
-      sender_type: "Households",
-      receiver_type: "Firms",
+      sender_type: "Household",
+      receiver_type: "Firm",
       instrument_type: "Bank Notes",
     },
     {
@@ -124,8 +124,8 @@ export default function Transactions({ ...rest }) {
       receiver: "F1",
       sender_balance: 2000000,
       receiver_balance: 10000000,
-      sender_type: "Households",
-      receiver_type: "Firms",
+      sender_type: "Household",
+      receiver_type: "Firm",
       instrument_type: "Bank Notes",
     },
     {
@@ -135,8 +135,8 @@ export default function Transactions({ ...rest }) {
       receiver: "CB",
       sender_balance: 100000000,
       receiver_balance: 1000000000,
-      sender_type: "Banks",
-      receiver_type: "Central Bank",
+      sender_type: "Bank",
+      receiver_type: "CentralBank",
       instrument_type: "Reserves",
     },
     {
@@ -146,8 +146,8 @@ export default function Transactions({ ...rest }) {
       receiver: "F1",
       sender_balance: 100000000,
       receiver_balance: 10000000,
-      sender_type: "Banks",
-      receiver_type: "Firms",
+      sender_type: "Bank",
+      receiver_type: "Firm",
       instrument_type: "Loans and Bonds",
     },
     {
@@ -157,14 +157,15 @@ export default function Transactions({ ...rest }) {
       receiver: "HH2",
       sender_balance: 1000000,
       receiver_balance: 2000000,
-      sender_type: "Households",
-      receiver_type: "Households",
+      sender_type: "Household",
+      receiver_type: "Household",
       instrument_type: "Bank Notes",
     },
   ]);
 
   React.useEffect(() => {
-    get_data();
+    //get_data();
+    draw(data);
   });
 
   function get_data() {
@@ -702,9 +703,9 @@ export default function Transactions({ ...rest }) {
                     label="Account Type"
                     onChange={handleSelectChange}
                   >
-                    <MenuItem value="household">Households</MenuItem>
-                    <MenuItem value="bank">Banks</MenuItem>
-                    <MenuItem value="firm">Firms</MenuItem>
+                    <MenuItem value="household">Household</MenuItem>
+                    <MenuItem value="bank">Bank</MenuItem>
+                    <MenuItem value="firm">Firm</MenuItem>
                     <MenuItem value="lsp">License Service Providers</MenuItem>
                     <MenuItem value="centralbank">Central Bank</MenuItem>
                   </Select>
