@@ -1,8 +1,9 @@
 import React from "react";
 //import { Switch, Route, Redirect } from "react-router-dom";
 import * as d3 from "d3";
-import { event as d3_event } from "d3-selection";
-import { drag as d3Drag } from "d3-drag";
+import {nest as d3_nest} from 'd3-collection';
+//import { event as d3.event } from "d3-selection";
+//import { drag as d3.drag } from "d3-drag";
 import "../../assets/css/charts.css";
 import _ from "lodash";
 import $ from "jquery";
@@ -18,6 +19,7 @@ import GridContainer from "components/Grid/GridContainer.js";
 import Card from "components/Card/Card.js";
 import CardHeader from "components/Card/CardHeader.js";
 import CardBody from "components/Card/CardBody.js";
+import {groupColors} from "assets/jss/material-dashboard-react.js";
 
 const styles = {
   cardCategoryWhite: {
@@ -180,6 +182,7 @@ export default function Transactions({ ...rest }) {
   // Data for drawing
   var chart_data = {}; 
   var simulation;
+  var zoom;
   var nodes = [];
   var links = [];
   var groups = {};
@@ -223,11 +226,13 @@ export default function Transactions({ ...rest }) {
 
     d3.select(".vis-networkchart").html("");
 
+    zoom = d3.zoom().on("zoom", zoomed);
     svg = d3
       .select(".vis-networkchart")
       .append("svg")
       .attr("width", width + margin.left + margin.right)
       .attr("height", height + margin.top + margin.bottom)
+      .call(zoom).on("dblclick.zoom", null)
       .append("g")
       .attr("transform", "translate(" + margin.left + "," + margin.top + ")");
 
@@ -263,7 +268,7 @@ export default function Transactions({ ...rest }) {
       .text(function (d) {
         return d;
       })
-      .on("click", function (d) {
+      .on("click", function (event, d) {
         
       }); 
   }
@@ -334,7 +339,7 @@ export default function Transactions({ ...rest }) {
 
     // Get all addresses which will be nodes
     // Start with senders then go to receivers
-    d3.nest()
+    d3_nest()
       .key(function (d) {
         return d.sender;
       })
@@ -345,7 +350,7 @@ export default function Transactions({ ...rest }) {
       .entries(chart_data);
 
     // Now get receivers
-    d3.nest()
+    d3_nest()
       .key(function (d) {
         return d.receiver;
       })
@@ -356,7 +361,7 @@ export default function Transactions({ ...rest }) {
       .entries(chart_data);
 
     // Reduce to unique set of nodes
-    d3.nest()
+    d3_nest()
       .key(function (d) {
         return d.id;
       })
@@ -371,8 +376,7 @@ export default function Transactions({ ...rest }) {
       })
       .entries(txn_nodes);
 
-    var nodes_keys = d3
-      .nest()
+    var nodes_keys = d3_nest()
       .key(function (d) {
         return d.id;
       })
@@ -421,20 +425,19 @@ export default function Transactions({ ...rest }) {
       .force("center", d3.forceCenter(width / 2, height / 2));
 
     //Drag functions
-    var dragStart = (d) => {
-      alert("drag");
-      if (!d3_event.active) simulation.alphaTarget(0.3).restart();
+    var dragStart = (event, d) => {
+      if (!event.active) simulation.alphaTarget(0.3).restart();
       d.fx = d.x;
       d.fy = d.y;
     };
 
-    var drag = (d) => {
-      d.fx = d3_event.x;
-      d.fy = d3_event.y;
+    var dragDragging = (event, d) => {
+      d.fx = event.x;
+      d.fy = event.y;
     };
 
-    var dragEnd = (d) => {
-      if (!d3_event.active) simulation.alphaTarget(0);
+    var dragEnd = (event, d) => {
+      if (!event.active) simulation.alphaTarget(0);
       d.fx = null;
       d.fy = null;
     };
@@ -452,33 +455,27 @@ export default function Transactions({ ...rest }) {
       })
       .on("mouseover", function () {});
 
-    //Creating nodes
-    var node = d3
-      .select(".vis-networkchart")
-      .selectAll("div")
+    //draw circles for the nodes 
+    var node = svg.append("g")
+      .attr("class", 'node firm group')
+      .selectAll("circle")
       .data(nodes)
       .enter()
-      .append("div")
-      .attr("class", (d) => {
-        var acc_type = d.account_type.split(" ").join("_").toLowerCase();
-        var group = "";
-
-        if (d.id in groups) {
-          group = "node-group";
-        }
-
-        return "node " + acc_type + " " + group;
-      })
+      .append("circle")
+      .attr("r", node_radius)
+      .attr("fill", node_color)
+      .attr("stroke", node_stroke)
+      .attr("stroke-width", 5)
       .call(
-        d3Drag().on("start", dragStart).on("drag", drag).on("end", dragEnd)
+        d3.drag().on("start", dragStart).on("drag", dragDragging).on("end", dragEnd)
       )
-      .on("mouseover", (d) => {
-        node_tooltip(d);
+      .on("mouseover", (event, d) => {
+        node_tooltip(event, d);
       })
       .on("mouseout", () => {
         tooltip.style("opacity", 0).style("left", "0px").style("top", "0px");
       })
-      .on("click", (d) => {
+      .on("click", (event, d) => {
         tooltip.style("opacity", 0).style("left", "0px").style("top", "0px");
 
         var ungrouped = ungroup_data(d.id);
@@ -489,27 +486,43 @@ export default function Transactions({ ...rest }) {
 
     //Setting location when ticked
     ticked = () => {
+      //update circle positions each tick of the simulation 
+      node
+        .attr("cx", function(d) { return d.x; })
+        .attr("cy", function(d) { return d.y; });
+      
+      //update link positions 
       link
-        .attr("x1", (d) => {
-          return d.source.x;
-        })
-        .attr("y1", (d) => {
-          return d.source.y;
-        })
-        .attr("x2", (d) => {
-          return d.target.x;
-        })
-        .attr("y2", (d) => {
-          return d.target.y;
-        });
-
-      node.attr("style", (d) => {
-        return "left: " + (d.x - 3) + "px; top: " + (d.y + 70) + "px";
-      });
+        .attr("x1", function(d) { return d.source.x; })
+        .attr("y1", function(d) { return d.source.y; })
+        .attr("x2", function(d) { return d.target.x; })
+        .attr("y2", function(d) { return d.target.y; });
     };
   }
 
-  function node_tooltip(d) {
+  function zoomed(event) {
+    svg.attr("transform", event.transform);
+  }
+
+  function node_stroke(d){
+    if (d.id in groups) {
+      return "black";
+    }
+    return "none";
+  }
+
+  function node_radius(d){
+    if (d.id in groups) {
+      return 15;
+    }
+    return 12;
+  }
+  function node_color(d) {
+    var acc_type = d.account_type.split(" ").join("_").toLowerCase();
+    return groupColors[acc_type];
+  }
+
+  function node_tooltip(event, d) {
     var html = ""
     if (d.id in groups) {
       var info = groups[d.id]["info"];
@@ -532,8 +545,8 @@ export default function Transactions({ ...rest }) {
 
     tooltip
       .html(html)
-      .style("left", d3_event.pageX - 100 + "px")
-      .style("top", d3_event.pageY - 20 + "px")
+      .style("left", event.pageX - 100 + "px")
+      .style("top", event.pageY - 20 + "px")
       .style("opacity", 0.9);
   }
 
@@ -694,29 +707,45 @@ export default function Transactions({ ...rest }) {
             </CardHeader>
             <CardBody>
               <GridContainer>
-                <GridItem xs={12} sm={4} md={2}>
-                  <Select
-                    labelId="select-label"
+                <GridItem xs={12} sm={6} md={2}>
+                  <TextField
                     style={{margin:"5px", width:"100%"}}
                     variant="outlined"
-                    id="account_type_select"
                     label="Account Type"
+                    id='account_type_select'
+                    select
                     onChange={handleSelectChange}
                   >
-                    <MenuItem value="household">Household</MenuItem>
-                    <MenuItem value="bank">Bank</MenuItem>
-                    <MenuItem value="firm">Firm</MenuItem>
+                    <MenuItem value="household">Households</MenuItem>
+                    <MenuItem value="bank">Banks</MenuItem>
+                    <MenuItem value="firm">Firms</MenuItem>
                     <MenuItem value="lsp">License Service Providers</MenuItem>
                     <MenuItem value="centralbank">Central Bank</MenuItem>
-                  </Select>
+                  </TextField>
                 </GridItem>
-                <GridItem xs={12} sm={2} md={2}>
+                <GridItem xs={12} sm={6} md={2}>
+                  <Button 
+                    color="primary" 
+                    round
+                    onClick={() => {
+                      var group_info = selected.current;
+                      var group_range = "All";
+
+                      var grouped = group_data(group_by_account_type, [selected.current], group_info, group_range);
+                      if (grouped) {
+                        refresh_data();
+                      }
+                    }}>
+                    Group All
+                  </Button>
+                </GridItem>
+                <GridItem xs={12} sm={6} md={2}>
                   <TextField style={{margin:"5px"}} id="min-range" label="Min Balance" variant="outlined" />
                 </GridItem>
-                <GridItem xs={12} sm={2} md={2}>
+                <GridItem xs={12} sm={6} md={2}>
                   <TextField style={{margin:"5px"}} id="max-range" label="Max Balance" variant="outlined" />
                 </GridItem>
-                <GridItem xs={12} sm={2} md={2}>
+                <GridItem xs={12} sm={6} md={2}>
                   <Button 
                     color="primary" 
                     round
@@ -735,27 +764,13 @@ export default function Transactions({ ...rest }) {
                     Group Range
                   </Button>
                 </GridItem>
-                <GridItem xs={12} sm={2} md={2}>
-                  <Button 
-                    color="primary" 
-                    round
-                    onClick={() => {
-                      var group_info = selected.current;
-                      var group_range = "All";
-
-                      var grouped = group_data(group_by_account_type, [selected.current], group_info, group_range);
-                      if (grouped) {
-                        refresh_data();
-                      }
-                    }}>
-                    Group All
-                  </Button>
-                </GridItem>
-                <div style={{ overflowX: "auto", overflowY: "hidden" }}>
-                  <div className="container">
-                    <div className="vis-networkchart"></div>
+                <GridItem xs={12} sm={12} md={12}>
+                  <div style={{ overflowX: "auto", overflowY: "hidden" }}>
+                    <div className="container">
+                      <div className="vis-networkchart"></div>
+                    </div>
                   </div>
-                </div>
+                </GridItem>
               </GridContainer>
             </CardBody>
           </Card>
