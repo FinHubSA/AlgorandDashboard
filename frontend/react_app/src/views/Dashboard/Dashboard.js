@@ -64,24 +64,34 @@ export default function Dashboard() {
   const [total_volume, setVolume] = useState([])
 
 
-  React.useEffect(() => {
-    var url = "http://localhost:8000/api/total_transactions"
-    axios.get(url).then((response) => {
-      setTransactions(response.data);
-    });
-  }, []);
+  // React.useEffect(() => {
+  //   var url = "http://localhost:8000/api/total_transactions"
+  //   axios.get(url).then((response) => {
+  //     setTransactions(response.data);
+  //   });
+  // }, []);
+   React.useEffect(() => {
+     getTransactions();
+     getVolume();
+    }, []);
 
 
-  React.useEffect(() => {
+    //api calls
+   const getTransactions = () => {
+     var url = "http://localhost:8000/api/total_transactions"
+     axios.get(url).then((response) => {
+       setTransactions(response.data);
+     });
+   }
+  const getVolume = () => {
     var url = "http://localhost:8000/api/total_volume"
     axios.get(url).then((response) => {
       var total = response.data.total_volume
       //remove trailing zeroes
       var repl = total.replace(/^0+(\d)|(\d)0+$/gm, '$1$2');
-
       setVolume(repl);
-    });
-  }, []);
+     });
+  }
 
    // define start date and end date state
   const [data_startdate_1, setCheckInDate] = useState(null);
@@ -107,9 +117,17 @@ export default function Dashboard() {
 
   // define handler change function on start date
   const handleCheckOutDate = (date) => {
+    //console.log(typeof(data_startdate_1));
+    console.log(typeof(date));
+    //console.log(date_2.target.value);
+    //const valueOfInput = date_1.format();
+    //const valueOfInput_2 = date_2.format();
+    //getTransactions()
+    //getVolume()
     setCheckOutDate(date);
   };
-   const handleCheckOutDate_2 = (date) => {
+  const handleCheckOutDate_2 = (date) => {
+     console.log(date)
     setCheckOutDate_2(date);
    };
    const handleCheckOutDate_3 = (date) => {
@@ -152,7 +170,9 @@ export default function Dashboard() {
          <DatePicker 
            selected={data_enddate_1}
            minDate={data_startdate_1}
-            onChange={handleCheckOutDate}
+                onChange={(data_startdate_1, data_enddate_1) => {
+                  handleCheckOutDate(data_startdate_1, data_enddate_1);
+                }}
           />
         </div>
         </div>
