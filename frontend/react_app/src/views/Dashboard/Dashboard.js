@@ -82,7 +82,7 @@ export default function Dashboard() {
       setVolume(repl);
     });
   }, []);
-
+  //var start_date = new Date('2020-04-13T00:00:00.000+08:00')
    // define check-in and check-out state
   const [checkInDate, setCheckInDate] = useState(null);
   const [checkOutDate, setCheckOutDate] = useState(null);
@@ -97,17 +97,15 @@ export default function Dashboard() {
   const handleCheckOutDate = (date) => {
     setCheckOutDate(date);
   };
-
+  
   
   return (
     <div>
       <div class="header">
         <h2 >Algorand Dashboard</h2>
       </div>
-      {/* <GridContainer>
-        <GridItem xs={12} sm={3} md={3}> */}
-      <div className="input-container">
-        <div>
+      <GridContainer>
+        <GridItem xs={12} sm={6} md={6}>
 
          <div className="data-reactpicker-styling">
          {checkInDate && checkOutDate && (
@@ -121,8 +119,9 @@ export default function Dashboard() {
               </div>
             )}
           </div>
-        </div>
-        
+        </GridItem>
+        <GridItem xs={12} sm={3} md={3}>
+          <div className="input-container">
           <div>
             <label>From</label>
            <DatePicker 
@@ -131,7 +130,7 @@ export default function Dashboard() {
             onChange={handleCheckInDate}
              />
         </div>
-        <div>
+          <div>
          <label>To</label>
          <DatePicker 
            selected={checkOutDate}
@@ -140,7 +139,8 @@ export default function Dashboard() {
           />
         </div>
         </div>
-      {/* </GridContainer> */}
+        </GridItem>
+      </GridContainer>
       <GridContainer>
         <GridItem xs={12} sm={3} md={3}>
             <GridContainer>
