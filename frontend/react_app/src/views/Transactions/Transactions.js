@@ -45,7 +45,7 @@ const useStyles = makeStyles(styles);
 export default function Transactions({ ...rest }) {
   const classes = useStyles();
   const chartWidth = 1100
-  const chartHeight = 530;
+  const chartHeight = 430;
   const groupBy = React.useRef();
   const [data, set_data] = React.useState([
     {
