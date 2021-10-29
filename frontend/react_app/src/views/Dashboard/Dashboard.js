@@ -137,9 +137,12 @@ export default function Dashboard() {
   
   return (
     <div>
-      <div class="header">
-        <h2 >Algorand Dashboard</h2>
-      </div>
+      <div class="banner" >
+<div class="banner-content">
+<h2 class="banner-header"> Algorand Analysis Dashboard</h2>
+<h7 class ="banner-sub">Welcome to the Algorand blockchain analysis dashboard, developed by the Algorand-UCT Financial Innovation Hub.</h7>
+</div>
+</div>
       <GridContainer>
         <GridItem xs={12} sm={3} md={6}>
             <div className="data-reactpicker-styling">
@@ -183,9 +186,9 @@ export default function Dashboard() {
             <GridContainer>
             <GridItem xs={12}>
                <Card>
-            <CardHeader color="warning" stats icon>
-              <CardIcon color="warning">
-                <Icon>content_copy</Icon>
+            <CardHeader  color="warning" stats icon>
+              <CardIcon  color="warning" className="section_1">
+                <Icon className="section_1">content_copy</Icon>
               </CardIcon>
               <p className={classes.cardCategory}>Total Number Transactions</p>
               <h3 className={classes.cardTitle}> {total_transaction.total_transactions}
@@ -203,7 +206,7 @@ export default function Dashboard() {
             <GridItem xs={12}>
                 <Card>
             <CardHeader color="success" stats icon>
-              <CardIcon color="success">
+              <CardIcon className="section_1" color="success">
                 <Store />
               </CardIcon>
               <p className={classes.cardCategory}>Average Transaction Size</p>
@@ -225,7 +228,7 @@ export default function Dashboard() {
             <GridItem xs={12}>
                <Card>
             <CardHeader color="success" stats icon>
-              <CardIcon color="success">
+              <CardIcon className="section_1" color="success">
                 <Store />
               </CardIcon>
               <p className={classes.cardCategory}>Volume in Circulation</p>
@@ -242,7 +245,7 @@ export default function Dashboard() {
             <GridItem xs={12}>
                <Card>
             <CardHeader color="success" stats icon>
-              <CardIcon color="success">
+              <CardIcon className="section_1" color="success">
                 <Store />
               </CardIcon>
               <p className={classes.cardCategory}>Average Loan Size</p>
@@ -311,7 +314,7 @@ export default function Dashboard() {
         </GridItem>
         <GridItem xs={5} sm={12} md={4}>
           <Card chart>
-            <CardHeader color="success">
+            <CardHeader className="section_2" color="success">
               <ChartistGraph
                 className="ct-chart"
                 data={dailySalesChart.data}
