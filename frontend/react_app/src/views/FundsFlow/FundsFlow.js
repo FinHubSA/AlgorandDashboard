@@ -1,4 +1,5 @@
 import React, { Component } from "react";
+import ChartistGraph from "react-chartist";
 import * as d3 from "d3";
 import {nest as d3_nest} from 'd3-collection';
 import "../../assets/css/charts.css";
@@ -12,14 +13,34 @@ import CardHeader from "components/Card/CardHeader.js";
 import CardBody from "components/Card/CardBody.js";
 import styles from "assets/jss/material-dashboard-react/views/dashboardStyle.js";
 
+// charts
+import {dailySalesChart} from "variables/charts.js";
+import ArrowUpward from "@material-ui/icons/ArrowUpward";
+import CardFooter from "components/Card/CardFooter.js";
+import Update from "@material-ui/icons/Update";
+import DateRangePicker from "components/DateRange/DateRangePicker.js"
 
 const useStyles = makeStyles(styles);
 
 export default function FundsFlow({ ...rest }) {
   const classes = useStyles();
   const chartWidth = 750;
-  const chartHeight = 250
-
+  const chartHeight = 250;
+  const margin = { top: 20, right: 20, bottom: 30, left: 40 };
+  const width = chartWidth - margin.left - margin.right;
+  const height = chartHeight - margin.top - margin.bottom;
+  const node_labels = {
+    "Banks": "Banks",
+    "Central Bank": "Central Bank",
+    "Firms": "Firms",
+    "Households": "Households",
+    "License Service Providers": "License Service Providers",
+    "Bank Notes": "Bank Notes",
+    "Deposits": "Deposits",
+    "Loans and Bonds": "Loans and Bonds",
+    "Reserves": "Reserves",
+    "Central Bank Digital Currency": "Central Bank Digital Currency",
+  };
   const [data, set_data] = React.useState([
     {
       account_type: "Households",
@@ -58,27 +79,8 @@ export default function FundsFlow({ ...rest }) {
     }
   ]);
 
-  React.useEffect(() => {
-    console.log("flow called");
-    draw(data);
-  });
-
-  const margin = { top: 20, right: 20, bottom: 30, left: 40 };
-  const width = chartWidth - margin.left - margin.right;
-  const height = chartHeight - margin.top - margin.bottom;
-  const node_labels = {
-    "Banks": "Banks",
-    "Central Bank": "Central Bank",
-    "Firms": "Firms",
-    "Households": "Households",
-    "License Service Providers": "License Service Providers",
-    "Bank Notes": "Bank Notes",
-    "Deposits": "Deposits",
-    "Loans and Bonds": "Loans and Bonds",
-    "Reserves": "Reserves",
-    "Central Bank Digital Currency": "Central Bank Digital Currency",
-  };
-
+  var selectedFromDate = new Date();
+  var selectedToDate = new Date();
   var svg;
   var nodes = [];
   var links = [];
@@ -110,6 +112,10 @@ export default function FundsFlow({ ...rest }) {
       "#9c9b9b",
       "#9c9b9b",
     ]);
+
+  React.useEffect(() => {
+    draw(data);
+  });
 
   function draw(data) {
     initialize_chart();
@@ -716,9 +722,23 @@ export default function FundsFlow({ ...rest }) {
     return sankey;
   }
 
+  const handleFromDateChange = (date) => {
+    selectedFromDate = date;
+  };
+
+  const handleToDateChange = (date) => {
+    selectedToDate = date;
+  };
+
   return (
     <GridContainer>
-      <GridItem xs={12} sm={12} md={12}>
+      <GridItem xs={12} sm={6} md={6}>
+        <DateRangePicker 
+          handleFromDateChange={handleFromDateChange} 
+          handleToDateChange={handleToDateChange}
+        />
+      </GridItem>
+      <GridItem xs={12} sm={12} md={8}>
         <Card>
           <CardHeader className="section_2" color="primary">
             <h4 style={{ marginTop: '5px', marginBottom: '5px', fontWeight: "500" }} >Counterparty Flow Of Funds</h4>
@@ -740,6 +760,34 @@ export default function FundsFlow({ ...rest }) {
               </div>
             </div>
           </CardBody>
+        </Card>
+      </GridItem>
+      <GridItem xs={5} sm={12} md={4}>
+        <Card chart>
+          <CardHeader className="section_2" color="success">
+            <ChartistGraph
+              className="ct-chart"
+              data={dailySalesChart.data}
+              type="Line"
+              options={dailySalesChart.options}
+              listener={dailySalesChart.animation}
+            />
+          </CardHeader>
+          <CardBody>
+            <h4 className={classes.cardTitle}>Volume of funds in each account type</h4>
+            <p className={classes.cardCategory}>
+              <span className={classes.successText}>
+                <ArrowUpward className={classes.upArrowCardCategory} /> 55%
+              </span>{" "}
+              increase in funds in banks.
+            </p>
+          </CardBody>
+          <CardFooter chart>
+              <div className={classes.stats}>
+              <Update />
+              Just Updated
+            </div>
+          </CardFooter>
         </Card>
       </GridItem>
     </GridContainer>
