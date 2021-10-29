@@ -4,6 +4,7 @@ import * as d3 from "d3";
 import {nest as d3_nest} from 'd3-collection';
 import "../../assets/css/charts.css";
 import $ from "jquery";
+import axios from "axios";
 // @material-ui/core
 import { makeStyles } from "@material-ui/core/styles";
 import GridItem from "components/Grid/GridItem.js";
@@ -12,7 +13,6 @@ import Card from "components/Card/Card.js";
 import CardHeader from "components/Card/CardHeader.js";
 import CardBody from "components/Card/CardBody.js";
 import styles from "assets/jss/material-dashboard-react/views/dashboardStyle.js";
-
 // charts
 import {dailySalesChart} from "variables/charts.js";
 import ArrowUpward from "@material-ui/icons/ArrowUpward";
@@ -25,15 +25,15 @@ const useStyles = makeStyles(styles);
 export default function FundsFlow({ ...rest }) {
   const classes = useStyles();
   const chartWidth = 750;
-  const chartHeight = 250;
+  const chartHeight = 300;
   const margin = { top: 20, right: 20, bottom: 30, left: 40 };
   const width = chartWidth - margin.left - margin.right;
   const height = chartHeight - margin.top - margin.bottom;
   const node_labels = {
-    "Banks": "Banks",
+    "Bank": "Bank",
     "Central Bank": "Central Bank",
-    "Firms": "Firms",
-    "Households": "Households",
+    "Firm": "Firm",
+    "Household": "Household",
     "License Service Providers": "License Service Providers",
     "Bank Notes": "Bank Notes",
     "Deposits": "Deposits",
@@ -43,37 +43,37 @@ export default function FundsFlow({ ...rest }) {
   };
   const [data, set_data] = React.useState([
     {
-      account_type: "Households",
+      sender_type: "Household",
       instrument_type: "Deposits",
-      counter_party: "Banks",
+      receiver_type: "Bank",
       payments: true,
       value: 1000000,
     },
     {
-      account_type: "Firms",
+      sender_type: "Firm",
       instrument_type: "Deposits",
-      counter_party: "Banks",
+      receiver_type: "Bank",
       payments: true,
       value: 1500000,
     },
     {
-      account_type: "Central Bank",
+      sender_type: "Central Bank",
       instrument_type: "Bank Notes",
-      counter_party: "Households",
+      receiver_type: "Household",
       payments: true,
       value: 1000000,
     },
     {
-      account_type: "Banks",
+      sender_type: "Bank",
       instrument_type: "Loans and Bonds",
-      counter_party: "Firms",
+      receiver_type: "Firm",
       payments: true,
       value: 1500000,
     },
     {
-      account_type: "Banks",
+      sender_type: "Bank",
       instrument_type: "Reserves",
-      counter_party: "Central Bank",
+      receiver_type: "Central Bank",
       payments: true,
       value: 500000,
     }
@@ -114,8 +114,19 @@ export default function FundsFlow({ ...rest }) {
     ]);
 
   React.useEffect(() => {
-    draw(data);
+    //draw(data);
+    get_data();
   });
+
+  function get_data() {
+    var url = "http://localhost:8000/api/account_type_total"
+    axios.get(url).then((response) => {
+      console.log("ff **");
+      console.log(response.data)
+      draw(response.data);
+    })
+    .catch(error => console.error('Error: $(error)'));
+  }
 
   function draw(data) {
     initialize_chart();
@@ -137,13 +148,9 @@ export default function FundsFlow({ ...rest }) {
   }
 
   function prepare_data() {
-    /**** Get nodes and links ****/
-  
-    /*  
-          We are creating a chart like this:
-          Total Payments  -> Instrument -> Receipts
-      */
-  
+    //We are creating a chart like this:
+    //Total Payments  -> Instrument -> Receipts
+
     // We need to add up all the payments of each account type.
     // An account type might have 2 deposits payments.
     // For example, households may deposit into banks and firms.
@@ -151,7 +158,7 @@ export default function FundsFlow({ ...rest }) {
   
     var payments_sub_totals = d3_nest()
       .key(function (d) {
-        return d.account_type;
+        return d.sender_type;
       })
       .key(function (d) {
         return d.payments;
@@ -161,7 +168,7 @@ export default function FundsFlow({ ...rest }) {
       })
       .rollup(function (values) {
         return d3.sum(values, function (d) {
-          return d.value;
+          return parseFloat(d.value);
         });
       })
       .entries(data);
@@ -173,12 +180,13 @@ export default function FundsFlow({ ...rest }) {
       acc_type.values.forEach(function (is_payments) {
         if (is_payments.key === "true") {
           is_payments.values.forEach(function (ins_type) {
+            
             nodes.push({ name: acc_type.key + " payments" });
   
             var link_data = {
               source: acc_type.key + " payments",
               target: ins_type.key,
-              value: ins_type.value,
+              value: parseFloat(ins_type.value),
               payments: acc_type.key + " payments",
               instrument: ins_type.key,
               color: acc_type.key,
@@ -200,20 +208,20 @@ export default function FundsFlow({ ...rest }) {
     data.forEach(function (d) {
       if (d.payments === true) {
         nodes.push({ name: d.instrument_type });
-        nodes.push({ name: d.counter_party + " asset" });
+        nodes.push({ name: d.receiver_type + " receipts" });
         links.push({
           source: d.instrument_type,
-          target: d.counter_party + " asset",
-          value: d.value,
-          payments: d.account_type + " payments",
+          target: d.receiver_type + " receipts",
+          value: parseFloat(d.value),
+          payments: d.sender_type + " payments",
           instrument: d.instrument_type,
           color: d.instrument_type,
           first: d.instrument_type,
           second: d.instrument_type,
-          third: d.counter_party,
-          liaIns: "L" + d.account_type + " payments" + d.instrument_type,
+          third: d.receiver_type,
+          liaIns: "L" + d.sender_type + " payments" + d.instrument_type,
           liaIns2:
-            d.instrument_type + "_" + d.instrument_type + "_" + d.counter_party,
+            d.instrument_type + "_" + d.instrument_type + "_" + d.receiver_type,
         });
       }
     });
@@ -249,7 +257,7 @@ export default function FundsFlow({ ...rest }) {
       linksX.push({
         source: d.source,
         target: d.target,
-        value: d.value,
+        value: parseFloat(d.value),
         color: d.color,
         liaIns: "L" + d.payments + d.instrument,
         liaIns2: d.first + "_" + d.second + "_" + d.third,
@@ -258,7 +266,6 @@ export default function FundsFlow({ ...rest }) {
   }
 
   function initialize_sankey() {
-    /************************/
     // Set the sankey diagram properties
     var sankey = d3sankey()
       .nodeWidth(20)
@@ -314,7 +321,7 @@ export default function FundsFlow({ ...rest }) {
           d3.selectAll("." + d.liaIns).style("stroke-opacity", 0.5);
         }
       })
-      .on("mouseout", function () {
+      .on("mouseout", function (event, d) {
         $("#info").empty();
         d3.selectAll("path").style("stroke-opacity", 0.07);
       });
