@@ -81,6 +81,7 @@ export default function FundsFlow({ ...rest }) {
 
   var selectedFromDate = new Date();
   var selectedToDate = new Date();
+  var chart_data = {}; 
   var svg;
   var nodes = [];
   var links = [];
@@ -129,6 +130,8 @@ export default function FundsFlow({ ...rest }) {
   }
 
   function draw(data) {
+    chart_data = _.cloneDeep(data);
+
     initialize_chart();
     prepare_data();
     initialize_sankey();
@@ -171,7 +174,7 @@ export default function FundsFlow({ ...rest }) {
           return parseFloat(d.value);
         });
       })
-      .entries(data);
+      .entries(chart_data);
   
     console.log("sub totals:");
     console.log(payments_sub_totals);
@@ -205,7 +208,7 @@ export default function FundsFlow({ ...rest }) {
     //get all source and target into nodes
     //will reduce to unique in the next step
     //also get links in object form
-    data.forEach(function (d) {
+    chart_data.forEach(function (d) {
       if (d.payments === true) {
         nodes.push({ name: d.instrument_type });
         nodes.push({ name: d.receiver_type + " receipts" });
