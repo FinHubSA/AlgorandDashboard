@@ -24,9 +24,9 @@ const useStyles = makeStyles(styles);
 
 export default function FundsFlow({ ...rest }) {
   const classes = useStyles();
-  const chartWidth = 750;
+  const chartWidth = 700;
   const chartHeight = 300;
-  const margin = { top: 20, right: 20, bottom: 30, left: 40 };
+  const margin = { top: 20, right: 10, bottom: 30, left: 10 };
   const width = chartWidth - margin.left - margin.right;
   const height = chartHeight - margin.top - margin.bottom;
   const node_labels = {
@@ -754,7 +754,7 @@ export default function FundsFlow({ ...rest }) {
             <h4 style={{ marginTop: '5px', marginBottom: '5px', fontWeight: "500" }} >Counterparty Flow Of Funds</h4>
           </CardHeader>
           <CardBody>
-            <div style={{ overflowX: "hidden", overflowY: "hidden" }}>
+            <div style={{ overflowX: "auto", overflowY: "hidden" }}>
               <div className="chart-container center">
                 <div className="row headings">
                   <div className="col-sm-3 col-xs-4"><h6 className={classes.cardTitle} style={{ marginTop: '0px', marginBottom: '2px' }}>Payments</h6></div>
@@ -778,7 +778,7 @@ export default function FundsFlow({ ...rest }) {
             <ChartistGraph
               className="ct-chart"
               data={dailySalesChart.data}
-              type="Pie"
+              type="Line"
               options={dailySalesChart.options}
               listener={dailySalesChart.animation}
             />
