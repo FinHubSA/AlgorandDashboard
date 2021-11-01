@@ -31,50 +31,50 @@ export default function FundsFlow({ ...rest }) {
   const height = chartHeight - margin.top - margin.bottom;
   const node_labels = {
     "Bank": "Bank",
-    "Central Bank": "Central Bank",
+    "CentralBank": "CentralBank",
     "Firm": "Firm",
     "Household": "Household",
-    "License Service Providers": "License Service Providers",
+    "LSP": "LSP",
     "Bank Notes": "Bank Notes",
     "Deposits": "Deposits",
     "Loans and Bonds": "Loans and Bonds",
     "Reserves": "Reserves",
-    "Central Bank Digital Currency": "Central Bank Digital Currency",
+    "CBDC": "CBDC",
   };
   const [data, set_data] = React.useState([
     {
       sender_type: "Household",
       instrument_type: "Deposits",
       receiver_type: "Bank",
-      payments: true,
+      payments: "true",
       value: 1000000,
     },
     {
       sender_type: "Firm",
       instrument_type: "Deposits",
       receiver_type: "Bank",
-      payments: true,
+      payments: "true",
       value: 1500000,
     },
     {
-      sender_type: "Central Bank",
+      sender_type: "CentralBank",
       instrument_type: "Bank Notes",
       receiver_type: "Household",
-      payments: true,
+      payments: "true",
       value: 1000000,
     },
     {
       sender_type: "Bank",
       instrument_type: "Loans and Bonds",
       receiver_type: "Firm",
-      payments: true,
+      payments: "true",
       value: 1500000,
     },
     {
       sender_type: "Bank",
       instrument_type: "Reserves",
-      receiver_type: "Central Bank",
-      payments: true,
+      receiver_type: "CentralBank",
+      payments: "true",
       value: 500000,
     }
   ]);
@@ -99,7 +99,7 @@ export default function FundsFlow({ ...rest }) {
       "Deposits",
       "Loans and Bonds",
       "Reserves",
-      "Central Bank Digital Currency",
+      "CBDC",
     ])
     .range([
       "#ff8c00",
@@ -209,7 +209,7 @@ export default function FundsFlow({ ...rest }) {
     //will reduce to unique in the next step
     //also get links in object form
     chart_data.forEach(function (d) {
-      if (d.payments === true) {
+      if (d.payments === "true") {
         nodes.push({ name: d.instrument_type });
         nodes.push({ name: d.receiver_type + " receipts" });
         links.push({
@@ -307,8 +307,8 @@ export default function FundsFlow({ ...rest }) {
       })
       .on("mouseover", function (event, d) {
         if (d.value != 0.0006) {
-          var source = d.source.name.replace(/ payments| asset|/gi, "");
-          var target = d.target.name.replace(/ payments| asset|/gi, "");
+          var source = d.source.name.replace(/ payments| receipts|/gi, "");
+          var target = d.target.name.replace(/ payments| receipts|/gi, "");
   
           d3.select("#info").html(
             node_labels[source] +
@@ -349,16 +349,16 @@ export default function FundsFlow({ ...rest }) {
       })
       .attr("width", sankey.nodeWidth())
       .style("fill", function (d) {
-        var name = d.name.replace(/ payments| asset|/gi, "");
+        var name = d.name.replace(/ payments| receipts|/gi, "");
         return (d.color = colors(name));
       })
       .on("mouseover", function (event, d) {
         var text = "";
   
-        node = d.name.replace(/ payments| asset|/gi, "");
+        node = d.name.replace(/ payments| receipts|/gi, "");
   
-        if (d.name.substr(d.name.lastIndexOf(" ass") + 1) == "asset") {
-          text = "asset";
+        if (d.name.substr(d.name.lastIndexOf(" rec") + 1) == "receipts") {
+          text = "receipts";
         } else if (d.name.substr(d.name.lastIndexOf(" lia") + 1) == "payments") {
           text = "payments";
         } else {
@@ -374,7 +374,7 @@ export default function FundsFlow({ ...rest }) {
             " billion </span>"
         );
         d3.select(this).classed("highlight", true);
-        var name = d.name.replace(/ payments| asset|/gi, "");
+        var name = d.name.replace(/ payments| receipts|/gi, "");
         d3.selectAll("." + name).style("stroke-opacity", 0.5);
       })
       .on("mouseout", function (event, d) {
@@ -395,8 +395,8 @@ export default function FundsFlow({ ...rest }) {
       .attr("transform", null)
       .text(function (d) {
         var name = d.name.replace("_", "&");
-        var asset = name.replace(" asset", "");
-        var payments = asset.replace(" payments", "");
+        var receipts = name.replace(" receipts", "");
+        var payments = receipts.replace(" payments", "");
         return payments;
       })
       .filter(function (d) {
@@ -757,9 +757,9 @@ export default function FundsFlow({ ...rest }) {
             <div style={{ overflowX: "hidden", overflowY: "hidden" }}>
               <div className="chart-container center">
                 <div className="row headings">
-                  <div className="col-sm-3 col-xs-4"><h6 className={classes.cardTitle} style={{ marginTop: '0px', marginBottom: '2px' }}>Liability</h6></div>
+                  <div className="col-sm-3 col-xs-4"><h6 className={classes.cardTitle} style={{ marginTop: '0px', marginBottom: '2px' }}>Payments</h6></div>
                   <div className="col-sm-4 col-xs-4 text-right"><h6 className={classes.cardTitle} style={{ marginTop: '0px', marginBottom: '2px' }}>Instrument</h6></div>
-                  <div className="col-sm-3 col-xs-4 text-right"><h6 className={classes.cardTitle} style={{ marginTop: '0px', marginBottom: '2px' }}>Asset</h6></div>
+                  <div className="col-sm-3 col-xs-4 text-right"><h6 className={classes.cardTitle} style={{ marginTop: '0px', marginBottom: '2px' }}>Receipts</h6></div>
                 </div>
                 <div className="row">
                   <div className="col-sm-9  text-center" id="info"></div>
@@ -778,7 +778,7 @@ export default function FundsFlow({ ...rest }) {
             <ChartistGraph
               className="ct-chart"
               data={dailySalesChart.data}
-              type="Line"
+              type="Pie"
               options={dailySalesChart.options}
               listener={dailySalesChart.animation}
             />

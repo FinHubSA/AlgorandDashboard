@@ -7,12 +7,11 @@ from rest_framework.parsers import JSONParser
 from rest_framework import status
 from django.http import HttpResponse
 from django.core import serializers
-from django.db.models import F
+from django.db.models import F, CharField, Value 
 
 from dashboard_analytics.models import AccountType, InstrumentType, Account, Transaction
 from dashboard_analytics.serializers import AccountTypeSerializer, InstrumentTypeSerializer, AccountSerializer, TransactionSerializer
 from rest_framework.decorators import api_view
-
 
 @api_view(['GET'])
 def account_list(request):
