@@ -23,7 +23,7 @@ def process_json_transactions(transactions):
                     Balance=0)
             
             if Account.objects.filter(Address=txn["fields"]["Receiver"]).exists():
-                Account.objects.update(Balance=F("Balance") + txn["fields"]["Amount"])
+                Account.objects.filter(Address=txn["fields"]["Receiver"]).update(Balance=F("Balance") + txn["fields"]["Amount"])
             else:
                 Account.objects.create(
                     Address=txn["fields"]["Receiver"],
