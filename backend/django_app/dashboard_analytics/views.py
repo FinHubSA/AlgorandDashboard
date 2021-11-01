@@ -75,7 +75,10 @@ def most_active_addresses(request):
 
 @api_view(['GET'])
 def account_type_total(request):
-    type_totals = list(AccountType.objects.annotate(account_type_sum=Sum(
-        "account__Balance")).values_list('Type', 'account_type_sum'))
+    transaction_node = Transaction.objects.select_related('Sender__AccountTypeID', 'Receiver__AccountTypeID', "InstrumentTypeID")
+    node_data = transaction_node.values(
+            sender_type=F("Sender__AccountTypeID__Type"),
+            receiver_type=F("Receiver__AccountTypeID__Type"), 
+            instrument_type=F( "InstrumentTypeID__Type")).annotate(value=Sum('Amount'),payments=Value('true', output_field=CharField()))
     if request.method == 'GET':
-        return JsonResponse(type_totals, safe=False)
+        return JsonResponse(list(node_data), safe=False)
