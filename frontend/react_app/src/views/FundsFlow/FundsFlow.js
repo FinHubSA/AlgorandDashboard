@@ -1,8 +1,10 @@
 import React, { Component } from "react";
+import ChartistGraph from "react-chartist";
 import * as d3 from "d3";
 import {nest as d3_nest} from 'd3-collection';
 import "../../assets/css/charts.css";
 import $ from "jquery";
+import axios from "axios";
 // @material-ui/core
 import { makeStyles } from "@material-ui/core/styles";
 import GridItem from "components/Grid/GridItem.js";
@@ -11,107 +13,101 @@ import Card from "components/Card/Card.js";
 import CardHeader from "components/Card/CardHeader.js";
 import CardBody from "components/Card/CardBody.js";
 import styles from "assets/jss/material-dashboard-react/views/dashboardStyle.js";
-
+// charts
+import {dailySalesChart} from "variables/charts.js";
+import ArrowUpward from "@material-ui/icons/ArrowUpward";
+import CardFooter from "components/Card/CardFooter.js";
+import Update from "@material-ui/icons/Update";
+import DateRangePicker from "components/DateRange/DateRangePicker.js"
+import {groupColors} from "assets/jss/material-dashboard-react.js";
+import FundsTotals from "views/FundsTotals/FundsTotals.js";
 
 const useStyles = makeStyles(styles);
 
 export default function FundsFlow({ ...rest }) {
   const classes = useStyles();
-  const chartWidth = 750;
-  const chartHeight = 250
-
-  const [data, set_data] = React.useState([
-    {
-      account_type: "Households",
-      instrument_type: "Deposits",
-      counter_party: "Banks",
-      payments: true,
-      value: 1000000,
-    },
-    {
-      account_type: "Firms",
-      instrument_type: "Deposits",
-      counter_party: "Banks",
-      payments: true,
-      value: 1500000,
-    },
-    {
-      account_type: "Central Bank",
-      instrument_type: "Bank Notes",
-      counter_party: "Households",
-      payments: true,
-      value: 1000000,
-    },
-    {
-      account_type: "Banks",
-      instrument_type: "Loans and Bonds",
-      counter_party: "Firms",
-      payments: true,
-      value: 1500000,
-    },
-    {
-      account_type: "Banks",
-      instrument_type: "Reserves",
-      counter_party: "Central Bank",
-      payments: true,
-      value: 500000,
-    }
-  ]);
-
-  React.useEffect(() => {
-    console.log("flow called");
-    draw(data);
-  });
-
-  const margin = { top: 20, right: 20, bottom: 30, left: 40 };
+  const chartWidth = 700;
+  const chartHeight = 300;
+  const margin = { top: 20, right: 10, bottom: 30, left: 10 };
   const width = chartWidth - margin.left - margin.right;
   const height = chartHeight - margin.top - margin.bottom;
   const node_labels = {
-    "Banks": "Banks",
-    "Central Bank": "Central Bank",
-    "Firms": "Firms",
-    "Households": "Households",
-    "License Service Providers": "License Service Providers",
+    "Bank": "Bank",
+    "CentralBank": "CentralBank",
+    "Firm": "Firm",
+    "Household": "Household",
+    "LSP": "LSP",
     "Bank Notes": "Bank Notes",
     "Deposits": "Deposits",
     "Loans and Bonds": "Loans and Bonds",
     "Reserves": "Reserves",
-    "Central Bank Digital Currency": "Central Bank Digital Currency",
+    "CBDC": "CBDC",
   };
+  const [data, set_data] = React.useState([
+    {
+      sender_type: "Household",
+      instrument_type: "Deposits",
+      receiver_type: "Bank",
+      payments: "true",
+      value: 1000000,
+    },
+    {
+      sender_type: "Firm",
+      instrument_type: "Deposits",
+      receiver_type: "Bank",
+      payments: "true",
+      value: 1500000,
+    },
+    {
+      sender_type: "CentralBank",
+      instrument_type: "Bank Notes",
+      receiver_type: "Household",
+      payments: "true",
+      value: 1000000,
+    },
+    {
+      sender_type: "Bank",
+      instrument_type: "Loans and Bonds",
+      receiver_type: "Firm",
+      payments: "true",
+      value: 1500000,
+    },
+    {
+      sender_type: "Bank",
+      instrument_type: "Reserves",
+      receiver_type: "CentralBank",
+      payments: "true",
+      value: 500000,
+    }
+  ]);
 
+  var selectedFromDate = new Date();
+  var selectedToDate = new Date();
+  var chart_data = {}; 
   var svg;
   var nodes = [];
   var links = [];
   var linksX = [];
   var fmt = d3.format("0,.0f");
-  var colors = d3
-    .scaleOrdinal()
-    .domain([
-      "BN",
-      "CB",
-      "FM",
-      "HS",
-      "LSP",
-      "Bank Notes",
-      "Deposits",
-      "Loans and Bonds",
-      "Reserves",
-      "Central Bank Digital Currency",
-    ])
-    .range([
-      "#ff8c00",
-      "#40e0d0",
-      "#008000",
-      "#a52a2a",
-      "#4fc2be",
-      "#9c9b9b",
-      "#9c9b9b",
-      "#9c9b9b",
-      "#9c9b9b",
-      "#9c9b9b",
-    ]);
+
+  React.useEffect(() => {
+    //draw(data);
+    get_data();
+  });
+
+  function get_data() {
+    var url = "http://localhost:8000/api/account_type_payments_receipts"
+    axios.get(url).then((response) => {
+      console.log("ff **");
+      console.log(response.data)
+      draw(response.data);
+    })
+    .catch(error => console.error('Error: $(error)'));
+  }
 
   function draw(data) {
+    chart_data = _.cloneDeep(data);
+
     initialize_chart();
     prepare_data();
     initialize_sankey();
@@ -131,13 +127,9 @@ export default function FundsFlow({ ...rest }) {
   }
 
   function prepare_data() {
-    /**** Get nodes and links ****/
-  
-    /*  
-          We are creating a chart like this:
-          Total Payments  -> Instrument -> Receipts
-      */
-  
+    //We are creating a chart like this:
+    //Total Payments  -> Instrument -> Receipts
+
     // We need to add up all the payments of each account type.
     // An account type might have 2 deposits payments.
     // For example, households may deposit into banks and firms.
@@ -145,7 +137,7 @@ export default function FundsFlow({ ...rest }) {
   
     var payments_sub_totals = d3_nest()
       .key(function (d) {
-        return d.account_type;
+        return d.sender_type;
       })
       .key(function (d) {
         return d.payments;
@@ -155,10 +147,10 @@ export default function FundsFlow({ ...rest }) {
       })
       .rollup(function (values) {
         return d3.sum(values, function (d) {
-          return d.value;
+          return parseFloat(d.value);
         });
       })
-      .entries(data);
+      .entries(chart_data);
   
     console.log("sub totals:");
     console.log(payments_sub_totals);
@@ -167,12 +159,13 @@ export default function FundsFlow({ ...rest }) {
       acc_type.values.forEach(function (is_payments) {
         if (is_payments.key === "true") {
           is_payments.values.forEach(function (ins_type) {
+            
             nodes.push({ name: acc_type.key + " payments" });
   
             var link_data = {
               source: acc_type.key + " payments",
               target: ins_type.key,
-              value: ins_type.value,
+              value: parseFloat(ins_type.value),
               payments: acc_type.key + " payments",
               instrument: ins_type.key,
               color: acc_type.key,
@@ -191,23 +184,23 @@ export default function FundsFlow({ ...rest }) {
     //get all source and target into nodes
     //will reduce to unique in the next step
     //also get links in object form
-    data.forEach(function (d) {
-      if (d.payments === true) {
+    chart_data.forEach(function (d) {
+      if (d.payments === "true") {
         nodes.push({ name: d.instrument_type });
-        nodes.push({ name: d.counter_party + " asset" });
+        nodes.push({ name: d.receiver_type + " receipts" });
         links.push({
           source: d.instrument_type,
-          target: d.counter_party + " asset",
-          value: d.value,
-          payments: d.account_type + " payments",
+          target: d.receiver_type + " receipts",
+          value: parseFloat(d.value),
+          payments: d.sender_type + " payments",
           instrument: d.instrument_type,
-          color: d.instrument_type,
+          color: d.sender_type,
           first: d.instrument_type,
           second: d.instrument_type,
-          third: d.counter_party,
-          liaIns: "L" + d.account_type + " payments" + d.instrument_type,
+          third: d.receiver_type,
+          liaIns: "L" + d.sender_type + " payments" + d.instrument_type,
           liaIns2:
-            d.instrument_type + "_" + d.instrument_type + "_" + d.counter_party,
+            d.instrument_type + "_" + d.instrument_type + "_" + d.receiver_type,
         });
       }
     });
@@ -243,7 +236,7 @@ export default function FundsFlow({ ...rest }) {
       linksX.push({
         source: d.source,
         target: d.target,
-        value: d.value,
+        value: parseFloat(d.value),
         color: d.color,
         liaIns: "L" + d.payments + d.instrument,
         liaIns2: d.first + "_" + d.second + "_" + d.third,
@@ -252,7 +245,6 @@ export default function FundsFlow({ ...rest }) {
   }
 
   function initialize_sankey() {
-    /************************/
     // Set the sankey diagram properties
     var sankey = d3sankey()
       .nodeWidth(20)
@@ -272,7 +264,6 @@ export default function FundsFlow({ ...rest }) {
       .enter()
       .append("path")
       .attr("class", function (d) {
-        //console.log(d.source.name)
         return "link" + " " + d.liaIns + " " + d.color;
       })
       .attr("d", path)
@@ -284,15 +275,16 @@ export default function FundsFlow({ ...rest }) {
         }
       })
       .style("stroke", function (d) {
-        return colors(d.color);
+        var name = d.color.toLowerCase();
+        return groupColors[name];
       })
       .sort(function (a, b) {
         return b.dy - a.dy;
       })
       .on("mouseover", function (event, d) {
         if (d.value != 0.0006) {
-          var source = d.source.name.replace(/ payments| asset|/gi, "");
-          var target = d.target.name.replace(/ payments| asset|/gi, "");
+          var source = d.source.name.replace(/ payments| receipts|/gi, "");
+          var target = d.target.name.replace(/ payments| receipts|/gi, "");
   
           d3.select("#info").html(
             node_labels[source] +
@@ -308,7 +300,7 @@ export default function FundsFlow({ ...rest }) {
           d3.selectAll("." + d.liaIns).style("stroke-opacity", 0.5);
         }
       })
-      .on("mouseout", function () {
+      .on("mouseout", function (event, d) {
         $("#info").empty();
         d3.selectAll("path").style("stroke-opacity", 0.07);
       });
@@ -333,16 +325,24 @@ export default function FundsFlow({ ...rest }) {
       })
       .attr("width", sankey.nodeWidth())
       .style("fill", function (d) {
-        var name = d.name.replace(/ payments| asset|/gi, "");
-        return (d.color = colors(name));
+        var name = d.name.replace(/ payments| receipts|/gi, "").toLowerCase();
+
+        // var source = d.source.name.replace(/ payments| receipts|/gi, "").toLowerCase();
+        // var target = d.target.name.replace(/ payments| receipts|/gi, "").toLowerCase();
+        // var name = source;
+        // if (groupColors[source] === undefined){
+        //   name = target;
+        // }
+        // return (d.color = groupColors[d.name]);
+        return (d.color = groupColors[name]);
       })
       .on("mouseover", function (event, d) {
         var text = "";
   
-        node = d.name.replace(/ payments| asset|/gi, "");
+        node = d.name.replace(/ payments| receipts|/gi, "");
   
-        if (d.name.substr(d.name.lastIndexOf(" ass") + 1) == "asset") {
-          text = "asset";
+        if (d.name.substr(d.name.lastIndexOf(" rec") + 1) == "receipts") {
+          text = "receipts";
         } else if (d.name.substr(d.name.lastIndexOf(" lia") + 1) == "payments") {
           text = "payments";
         } else {
@@ -358,7 +358,7 @@ export default function FundsFlow({ ...rest }) {
             " billion </span>"
         );
         d3.select(this).classed("highlight", true);
-        var name = d.name.replace(/ payments| asset|/gi, "");
+        var name = d.name.replace(/ payments| receipts|/gi, "");
         d3.selectAll("." + name).style("stroke-opacity", 0.5);
       })
       .on("mouseout", function (event, d) {
@@ -379,8 +379,8 @@ export default function FundsFlow({ ...rest }) {
       .attr("transform", null)
       .text(function (d) {
         var name = d.name.replace("_", "&");
-        var asset = name.replace(" asset", "");
-        var payments = asset.replace(" payments", "");
+        var receipts = name.replace(" receipts", "");
+        var payments = receipts.replace(" payments", "");
         return payments;
       })
       .filter(function (d) {
@@ -716,23 +716,37 @@ export default function FundsFlow({ ...rest }) {
     return sankey;
   }
 
+  const handleFromDateChange = (date) => {
+    selectedFromDate = date;
+  };
+
+  const handleToDateChange = (date) => {
+    selectedToDate = date;
+  };
+
   return (
     <GridContainer>
-      <GridItem xs={12} sm={12} md={12}>
+      <GridItem xs={12} sm={6} md={6}>
+        <DateRangePicker 
+          handleFromDateChange={handleFromDateChange} 
+          handleToDateChange={handleToDateChange}
+        />
+      </GridItem>
+      <GridItem xs={12} sm={12} md={8}>
         <Card>
           <CardHeader className="section_2" color="primary">
             <h4 style={{ marginTop: '5px', marginBottom: '5px', fontWeight: "500" }} >Counterparty Flow Of Funds</h4>
           </CardHeader>
           <CardBody>
-            <div style={{ overflowX: "hidden", overflowY: "hidden" }}>
+            <div style={{ overflowX: "auto", overflowY: "hidden" }}>
               <div className="chart-container center">
                 <div className="row headings">
-                  <div className="col-sm-3 col-xs-4"><h6 className={classes.cardTitle} style={{ marginTop: '0px', marginBottom: '2px' }}>Liability</h6></div>
+                  <div className="col-sm-3 col-xs-4"><h6 className={classes.cardTitle} style={{ marginTop: '0px', marginBottom: '2px' }}>Payments</h6></div>
                   <div className="col-sm-4 col-xs-4 text-right"><h6 className={classes.cardTitle} style={{ marginTop: '0px', marginBottom: '2px' }}>Instrument</h6></div>
-                  <div className="col-sm-3 col-xs-4 text-right"><h6 className={classes.cardTitle} style={{ marginTop: '0px', marginBottom: '2px' }}>Asset</h6></div>
+                  <div className="col-sm-3 col-xs-4 text-right"><h6 className={classes.cardTitle} style={{ marginTop: '0px', marginBottom: '2px' }}>Receipts</h6></div>
                 </div>
                 <div className="row">
-                  <div className="col-sm-9  text-center" id="info"></div>
+                  <div className="col-sm-12  text-center" id="info"></div>
                 </div>
                 <div className="row">
                   <div id="sankeychart" className="vis-sankeychart" />
@@ -741,6 +755,9 @@ export default function FundsFlow({ ...rest }) {
             </div>
           </CardBody>
         </Card>
+      </GridItem>
+      <GridItem xs={5} sm={12} md={4}>
+        <FundsTotals />
       </GridItem>
     </GridContainer>
   );
