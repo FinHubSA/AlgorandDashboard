@@ -73,11 +73,25 @@ def most_active_addresses(request):
 
 
 @api_view(['GET'])
-def account_type_total(request):
-    transaction_node = Transaction.objects.select_related('Sender__AccountTypeID', 'Receiver__AccountTypeID', "InstrumentTypeID")
+def account_type_payments_receipts(request):
+    # select_related obtains all data at one time through multi-table join Association query.
+    # It improves performance by reducing the number of database queries.
+    # Sender__AccountTypeID is a string of joins. First to Account through Sender FK, 
+    #   then to the AccountType through AccountTypeID FK.
+    # annotate is the GROUP BY equivalent. In this case it groups by the 
+    transaction_node = Transaction.objects.select_related("Sender__AccountTypeID", "Receiver__AccountTypeID", "InstrumentTypeID")
     node_data = transaction_node.values(
             sender_type=F("Sender__AccountTypeID__Type"),
             receiver_type=F("Receiver__AccountTypeID__Type"), 
-            instrument_type=F( "InstrumentTypeID__Type")).annotate(value=Sum('Amount'),payments=Value('true', output_field=CharField()))
+            instrument_type=F( "InstrumentTypeID__Type")).annotate(value=Sum("Amount"),payments=Value("true", output_field=CharField()))
+    if request.method == "GET":
+        return JsonResponse(list(node_data), safe=False)
+    
+@api_view(['GET'])
+def account_type_total(request):
+    account_node = Account.objects.select_related("AccountTypeID")
+    node_data = account_node.values(
+            account_type=F("AccountTypeID__Type"
+        )).annotate(value=Sum("Balance"))
     if request.method == 'GET':
         return JsonResponse(list(node_data), safe=False)

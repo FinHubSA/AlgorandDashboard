@@ -19,6 +19,8 @@ import ArrowUpward from "@material-ui/icons/ArrowUpward";
 import CardFooter from "components/Card/CardFooter.js";
 import Update from "@material-ui/icons/Update";
 import DateRangePicker from "components/DateRange/DateRangePicker.js"
+import {groupColors} from "assets/jss/material-dashboard-react.js";
+import FundsTotals from "views/FundsTotals/FundsTotals.js";
 
 const useStyles = makeStyles(styles);
 
@@ -87,32 +89,6 @@ export default function FundsFlow({ ...rest }) {
   var links = [];
   var linksX = [];
   var fmt = d3.format("0,.0f");
-  var colors = d3
-    .scaleOrdinal()
-    .domain([
-      "BN",
-      "CB",
-      "FM",
-      "HS",
-      "LSP",
-      "Bank Notes",
-      "Deposits",
-      "Loans and Bonds",
-      "Reserves",
-      "CBDC",
-    ])
-    .range([
-      "#ff8c00",
-      "#40e0d0",
-      "#008000",
-      "#a52a2a",
-      "#4fc2be",
-      "#9c9b9b",
-      "#9c9b9b",
-      "#9c9b9b",
-      "#9c9b9b",
-      "#9c9b9b",
-    ]);
 
   React.useEffect(() => {
     //draw(data);
@@ -120,7 +96,7 @@ export default function FundsFlow({ ...rest }) {
   });
 
   function get_data() {
-    var url = "http://localhost:8000/api/account_type_total"
+    var url = "http://localhost:8000/api/account_type_payments_receipts"
     axios.get(url).then((response) => {
       console.log("ff **");
       console.log(response.data)
@@ -218,7 +194,7 @@ export default function FundsFlow({ ...rest }) {
           value: parseFloat(d.value),
           payments: d.sender_type + " payments",
           instrument: d.instrument_type,
-          color: d.instrument_type,
+          color: d.sender_type,
           first: d.instrument_type,
           second: d.instrument_type,
           third: d.receiver_type,
@@ -288,7 +264,6 @@ export default function FundsFlow({ ...rest }) {
       .enter()
       .append("path")
       .attr("class", function (d) {
-        //console.log(d.source.name)
         return "link" + " " + d.liaIns + " " + d.color;
       })
       .attr("d", path)
@@ -300,7 +275,8 @@ export default function FundsFlow({ ...rest }) {
         }
       })
       .style("stroke", function (d) {
-        return colors(d.color);
+        var name = d.color.toLowerCase();
+        return groupColors[name];
       })
       .sort(function (a, b) {
         return b.dy - a.dy;
@@ -349,8 +325,16 @@ export default function FundsFlow({ ...rest }) {
       })
       .attr("width", sankey.nodeWidth())
       .style("fill", function (d) {
-        var name = d.name.replace(/ payments| receipts|/gi, "");
-        return (d.color = colors(name));
+        var name = d.name.replace(/ payments| receipts|/gi, "").toLowerCase();
+
+        // var source = d.source.name.replace(/ payments| receipts|/gi, "").toLowerCase();
+        // var target = d.target.name.replace(/ payments| receipts|/gi, "").toLowerCase();
+        // var name = source;
+        // if (groupColors[source] === undefined){
+        //   name = target;
+        // }
+        // return (d.color = groupColors[d.name]);
+        return (d.color = groupColors[name]);
       })
       .on("mouseover", function (event, d) {
         var text = "";
@@ -762,7 +746,7 @@ export default function FundsFlow({ ...rest }) {
                   <div className="col-sm-3 col-xs-4 text-right"><h6 className={classes.cardTitle} style={{ marginTop: '0px', marginBottom: '2px' }}>Receipts</h6></div>
                 </div>
                 <div className="row">
-                  <div className="col-sm-9  text-center" id="info"></div>
+                  <div className="col-sm-12  text-center" id="info"></div>
                 </div>
                 <div className="row">
                   <div id="sankeychart" className="vis-sankeychart" />
@@ -773,32 +757,7 @@ export default function FundsFlow({ ...rest }) {
         </Card>
       </GridItem>
       <GridItem xs={5} sm={12} md={4}>
-        <Card chart>
-          <CardHeader className="section_2" color="success">
-            <ChartistGraph
-              className="ct-chart"
-              data={dailySalesChart.data}
-              type="Line"
-              options={dailySalesChart.options}
-              listener={dailySalesChart.animation}
-            />
-          </CardHeader>
-          <CardBody>
-            <h4 className={classes.cardTitle}>Volume of funds in each account type</h4>
-            <p className={classes.cardCategory}>
-              <span className={classes.successText}>
-                <ArrowUpward className={classes.upArrowCardCategory} /> 55%
-              </span>{" "}
-              increase in funds in banks.
-            </p>
-          </CardBody>
-          <CardFooter chart>
-              <div className={classes.stats}>
-              <Update />
-              Just Updated
-            </div>
-          </CardFooter>
-        </Card>
+        <FundsTotals />
       </GridItem>
     </GridContainer>
   );
