@@ -19,6 +19,7 @@
 import DashboardIcon from "@material-ui/icons/Dashboard";
 import BubbleChartIcon from "@material-ui/icons/BubbleChart";
 import AccountTreeIcon from "@material-ui/icons/AccountTree";
+import BarChartIcon from "@material-ui/icons/BarChart";
 import PersonIcon from "@material-ui/icons/Person";
 import LibraryBooksIcon from "@material-ui/icons/LibraryBooks";
 import LocationOnIcon from "@material-ui/icons/LocationOn";
@@ -26,9 +27,11 @@ import NotificationsIcon from "@material-ui/icons/Notifications";
 import UnarchiveIcon from "@material-ui/icons/Unarchive";
 import LanguageIcon from "@material-ui/icons/Language";
 // core components/views for Admin layout
+import Statistics from "views/Statistics/Statistics.js";
 import Transactions from "views/Transactions/Transactions.js";
 import FundsFlow from "views/FundsFlow/FundsFlow.js";
 import DashboardPage from "views/Dashboard/Dashboard.js";
+import FundsTotals from "views/FundsTotals/FundsTotals.js";
 import UserProfile from "views/UserProfile/UserProfile.js";
 import TableList from "views/TableList/TableList.js";
 import Typography from "views/Typography/Typography.js";
@@ -64,20 +67,28 @@ const dashboardRoutes = [
     component: FundsFlow,
     layout: "/admin",
   },
+  {
+    path: "/totals",
+    name: "Funds Totals",
+    rtlName: "قائمة الجدول",
+    icon: BarChartIcon,
+    component: FundsTotals,
+    layout: "/admin",
+  },
+  {
+    path: "/statistics",
+    name: "Statistics",
+    rtlName: "قائمة الجدول",
+    icon: BubbleChartIcon,
+    component: Statistics,
+    layout: "/admin",
+  },
   /*{
     path: "/user",
     name: "User Profile",
     rtlName: "ملف تعريفي للمستخدم",
     icon: PersonIcon,
     component: UserProfile,
-    layout: "/admin",
-  },
-  {
-    path: "/table",
-    name: "Table List",
-    rtlName: "قائمة الجدول",
-    icon: "content_paste",
-    component: TableList,
     layout: "/admin",
   },
   {
