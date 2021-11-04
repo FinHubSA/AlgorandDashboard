@@ -3,6 +3,7 @@ import ChartistGraph from "react-chartist";
 import * as d3 from "d3";
 import {nest as d3_nest} from 'd3-collection';
 import "../../assets/css/charts.css";
+import _ from "lodash";
 import $ from "jquery";
 import axios from "axios";
 // @material-ui/core
@@ -413,6 +414,7 @@ export default function FundsFlow({ ...rest }) {
     nodes = [];
     links = [];
     linksX = [];
+    net_funds = {};
     
     //We are creating a chart like this:
     //Total Payments  -> Instrument -> Receipts
