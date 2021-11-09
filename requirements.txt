@@ -19,7 +19,6 @@ idna==3.3
 joblib==0.16.0
 kombu==5.1.0
 numpy==1.21.2
-#pandas==1.1.1
 prompt-toolkit==3.0.20
 psycopg2-binary==2.8.5
 python-crontab==2.5.1
