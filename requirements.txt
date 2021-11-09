@@ -19,7 +19,6 @@ idna==3.3
 joblib==0.16.0
 kombu==5.1.0
 numpy==1.21.2
-pandas==1.1.1
 prompt-toolkit==3.0.20
 psycopg2-binary==2.8.5
 python-crontab==2.5.1
@@ -27,8 +26,6 @@ python-dateutil==2.8.2
 pytz==2021.3
 redis==3.5.3
 requests==2.26.0
-scikit-learn==0.23.2
-scipy==1.7.1
 six==1.16.0
 sqlparse==0.4.2
 threadpoolctl==3.0.0
